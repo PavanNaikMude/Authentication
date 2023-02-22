@@ -23,21 +23,22 @@ initializeDBAndServer();
 // API 1
 
 app.post("/register", async (request, response) => {
-  const { username, name, password, gender, location } = request.body;
+  let { username, name, password, gender, location } = request.body;
   const lengthOfPassWord = password.length;
   const isAlreadyExist = `SELECT * FROM user WHERE username LIKE '${username}'`;
 
   let dbResponse;
   dbResponse = await db.get(isAlreadyExist);
-  //console.log(dbResponse);
-  if (dbResponse !== undefined) {
+  // console.log(dbResponse);
+
+  if (dbResponse.username === username) {
     response.send("User already exists");
     response.status(400);
   } else if (lengthOfPassWord < 5) {
     response.send("Password is too short");
     response.status(400);
   } else {
-    const encryptedPassword = bcrypt.hash(password);
+    const encryptedPassword = await bcrypt.hash(password, 10);
     console.log(encryptedPassword);
     const createQuery = `INSERT INTO user(username,name,password,gender,location) VALUES('${username}','${name}','${encryptedPassword}','${gender}','${location}')`;
     dbResponse = await db.run(createQuery);
