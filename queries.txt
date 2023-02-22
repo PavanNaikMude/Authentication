@@ -1,0 +1,8 @@
+alreadyExistedOrNot = `SELECT `${username}` FROM user`
+
+
+const createQuery = `INSERT INTO user VALUES('${username}','${name}','${password}','${gender}','${location}')`;
+    dbResponse = await db.run(createQuery);
+    console.log(dbResponse);
+    response.send("User created successfully");
+    response.status(200);
