@@ -27,25 +27,24 @@ app.post("/register", async (request, response) => {
   const lengthOfPassWord = password.length;
   console.log(lengthOfPassWord);
   const isAlreadyExist = `SELECT * FROM user WHERE username LIKE '${username}'`;
-
   let dbResponse;
   dbResponse = await db.get(isAlreadyExist);
   console.log(dbResponse);
-  // console.log(dbResponse === undefined);
   if (dbResponse === undefined) {
     if (lengthOfPassWord < 5) {
+      response.status(400);
       response.send("Password is too short");
     } else {
       const encryptedPassword = await bcrypt.hash(password, 10);
       //console.log(encryptedPassword);
-      const createQuery = `INSERT INTO user(username,name,password,gender,location) VALUES('${username}','${name}','${encryptedPassword}','${gender}','${location}')`;
-      dbResponse = await db.run(createQuery);
+      const createQuery = `INSERT INTO user VALUES('${username}','${name}','${encryptedPassword}','${gender}','${location}')`;
+      const dbResponse = await db.run(createQuery);
       response.send("User created successfully");
       response.status(200);
     }
   } else {
-    response.send("User already exists");
     response.status(400);
+    response.send("User already exists");
   }
 });
 
@@ -70,6 +69,7 @@ app.post("/login", async (request, response) => {
       response.send("Login success!");
       response.status(200);
     } else {
+      response.status(400);
       response.send("Invalid password");
     }
   }
@@ -88,17 +88,18 @@ app.put("/change-password", async (request, response) => {
   const isPasswordMatched = await bcrypt.compare(oldPassword, dbPassword);
   console.log(isPasswordMatched);
   if (isPasswordMatched === false) {
+    response.status(400);
     response.send("Invalid current password");
-    response.status(400);
   } else if (newPassword.length < 5) {
-    response.send("Password is too short");
     response.status(400);
+    response.send("Password is too short");
   } else {
     const encryptedPassword = await bcrypt.hash(newPassword, 10);
     const updateQuery = `UPDATE user set password = '${encryptedPassword}' WHERE username LIKE '${username}'`;
     let dbResponse = db.run(updateQuery);
-    response.send("Password updated");
     response.status(200);
+    response.send("Password updated");
   }
 });
 module.exports = app;
+
